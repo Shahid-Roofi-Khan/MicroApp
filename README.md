@@ -1,3 +1,28 @@
+## Description
+
+This is my starter code for MicroServices standard project start up template
+
+### Includes,
+> API Gateway\
+> Serilog\
+> ElasticSearch (logging to Elastic and Kibana)
+
+### Todo more,
+> Upgrade to .Net 6 or latest\
+> Communication Bus for replication\
+> Redis\
+> JSON detailed arch\
+> MongoDB\
+> EF Core\
+> AutoMapper\
+> Docker / Docker compose files for auto provisioning\
+> Kubernetes Setup\
+> Convert it into full blogging engine for my solution of blogging\
+> All complicated scenarios of API Gateway to include\
+> Authentication to include
+
+
+## ----------------------- Original ReadME
 ## **Prerequisites**
 
 To execute the application, you should have the following installed in your computer:
