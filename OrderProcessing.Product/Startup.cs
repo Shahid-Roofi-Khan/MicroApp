@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
+using System.Net;
 using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
@@ -58,20 +60,40 @@ namespace OrderProcessing.Product
 
             //  var logger = loggerConfig.CreateLogger();
 
+            Serilog.Debugging.SelfLog.Enable(msg => Debug.WriteLine(msg));
+
+
+            ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls12;
+            ServicePointManager.ServerCertificateValidationCallback = delegate { return true; };
+           // ServicePointManager.
+
 
             Log.Logger = new LoggerConfiguration()
 .Enrich.FromLogContext()
 .WriteTo.Elasticsearch(new ElasticsearchSinkOptions(new Uri(_configuration["ElasticConfiguration:Uri"]))
 {
-    AutoRegisterTemplate = true,
+    //AutoRegisterTemplate = true,
+    //IndexFormat = $"{Assembly.GetExecutingAssembly().GetName().Name.ToLower()}-{DateTime.UtcNow:yyyy-MM}",
+    //CustomFormatter = new ExceptionAsObjectJsonFormatter(renderMessage: true),
+
+    //FailureCallback = e => Console.WriteLine("Unable to submit event " + e.MessageTemplate),
+    //EmitEventFailure = EmitEventFailureHandling.WriteToSelfLog |
+    //                                   EmitEventFailureHandling.WriteToFailureSink |
+    //                                   EmitEventFailureHandling.RaiseCallback,
+    //FailureSink = new FileSink("./failures.txt", new JsonFormatter(), null)
+
+
     IndexFormat = $"{Assembly.GetExecutingAssembly().GetName().Name.ToLower()}-{DateTime.UtcNow:yyyy-MM}",
     CustomFormatter = new ExceptionAsObjectJsonFormatter(renderMessage: true),
 
-    FailureCallback = e => Console.WriteLine("Unable to submit event " + e.MessageTemplate),
-    EmitEventFailure = EmitEventFailureHandling.WriteToSelfLog |
-                                       EmitEventFailureHandling.WriteToFailureSink |
-                                       EmitEventFailureHandling.RaiseCallback,
-    FailureSink = new FileSink("./failures.txt", new JsonFormatter(), null)
+    //IndexFormat = "log-myservice-dev",
+    AutoRegisterTemplate = true,
+    ModifyConnectionSettings = (c) => c.BasicAuthentication("elastic", "kfzTh-SuVwRaduntRpfC"),
+    NumberOfShards = 2,
+    NumberOfReplicas = 1,
+    EmitEventFailure = EmitEventFailureHandling.WriteToSelfLog,
+    MinimumLogEventLevel = Serilog.Events.LogEventLevel.Information
+
 })
 .Enrich.WithProperty("Environment", _env)
 .ReadFrom.Configuration(_configuration)
