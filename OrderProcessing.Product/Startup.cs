@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Net;
@@ -58,6 +57,7 @@ namespace OrderProcessing.Product
             //ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls12;
             //ServicePointManager.ServerCertificateValidationCallback = delegate { return true; };
 
+
             Log.Logger = new LoggerConfiguration()
             .Enrich.FromLogContext()
             .Enrich.WithProperty("Environment", _env)
@@ -65,23 +65,28 @@ namespace OrderProcessing.Product
             .Enrich.WithEnvironmentUserName()           //Shahid: Although mostly this would be system account, but sometimes for security, difference of creds come in, so it might be useful
             .Enrich.WithClientIp()                      //Shahid: This is of great value add. This is coming from nuget package: https://github.com/mo-esmp/serilog-enrichers-clientinfo
             .Enrich.WithClientAgent()                   //Shahid: This also from above nuget package
-            .WriteTo.Elasticsearch(new ElasticsearchSinkOptions(new Uri(_configuration["ElasticConfiguration:Uri"]))
-            {
+            .Enrich.With<EnricherForCMTraceForLogTypeField>()  //Shahid: This is my own class for small enricher so that log type property which CMTrace need to have to render its logs properly
+            //.WriteTo.Elasticsearch(new ElasticsearchSinkOptions(new Uri(_configuration["ElasticConfiguration:Uri"]))
+            //{
 
-                TypeName = null,                            //Shahid: Since Elastic Search 8.0.0 and onwards this filed is no more there, so need to set null else, it will break
-                BatchAction = ElasticOpType.Create,
-                IndexFormat = $"{Assembly.GetExecutingAssembly().GetName().Name.ToLower()}-{DateTime.UtcNow:yyyy-MM}",
-                CustomFormatter = new ExceptionAsObjectJsonFormatter(renderMessage: true),
-                AutoRegisterTemplate = true,
-                ModifyConnectionSettings = (c) => c.BasicAuthentication("elastic", "bYq_PZIk0827sGu0*4rE"),
-                NumberOfShards = 2,
-                NumberOfReplicas = 1,
-                EmitEventFailure = EmitEventFailureHandling.WriteToSelfLog,
-                MinimumLogEventLevel = Serilog.Events.LogEventLevel.Information
+            //    TypeName = null,                            //Shahid: Since Elastic Search 8.0.0 and onwards this filed is no more there, so need to set null else, it will break the sink
+            //    BatchAction = ElasticOpType.Create,
+            //    IndexFormat = $"{Assembly.GetExecutingAssembly().GetName().Name.ToLower()}-{DateTime.UtcNow:yyyy-MM}",
+            //    CustomFormatter = new ExceptionAsObjectJsonFormatter(renderMessage: true),
+            //    AutoRegisterTemplate = true,
+            //    ModifyConnectionSettings = (c) => c.BasicAuthentication("elastic", "bYq_PZIk0827sGu0*4rE"),
+            //    NumberOfShards = 2,
+            //    NumberOfReplicas = 1,
+            //    EmitEventFailure = EmitEventFailureHandling.WriteToSelfLog,
+            //    MinimumLogEventLevel = Serilog.Events.LogEventLevel.Information
 
-            })
+            //})
             .ReadFrom.Configuration(_configuration)     //Shahid: i hope this will help overrider settings here from setting in appsettings which should be ideal
             .CreateLogger();
+
+            
+
+           
 
             // Shahid: below was needed to fall back to normal logging in case of failures. Uncomment this to log to local file in case of failures
             //FailureCallback = e => Console.WriteLine("Unable to submit event " + e.MessageTemplate),
@@ -114,9 +119,9 @@ namespace OrderProcessing.Product
                 endpoints.MapControllers();
             });
 
-            loggerFactory.AddSerilog();
-
+            loggerFactory.AddSerilog();             //Shahid: This is the only change to add SeriLog to project. I've moved it from Program.cs from HostBuilder's end statement which makes it clean
 
         }
     }
+
 }
