@@ -49,75 +49,48 @@ namespace OrderProcessing.Product
             });
 
 
-            //  var loggerConfig = new LoggerConfiguration();
-
-            //  loggerConfig.MinimumLevel.Debug()
-            //.WriteTo.Elasticsearch(new ElasticsearchSinkOptions(new Uri("http://localhost:9200"))
-            //{
-            //    CustomFormatter = new ExceptionAsObjectJsonFormatter(renderMessage: true),
-            //    AutoRegisterTemplate = true,
-            //});
-
-            //  var logger = loggerConfig.CreateLogger();
-
-            Serilog.Debugging.SelfLog.Enable(msg => Debug.WriteLine(msg));
+            Serilog.Debugging.SelfLog.Enable(msg => Debug.WriteLine(msg));      //Shahid: This is very critical single line which tells in case logging fails to serilog the reason of actual failure
 
 
-            ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls12;
-            ServicePointManager.ServerCertificateValidationCallback = delegate { return true; };
-           // ServicePointManager.
-
+            // ------------ Shahid: below were needed to override how Elastic Search service was hit from dotnet
+            //ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls12;
+            //ServicePointManager.ServerCertificateValidationCallback = delegate { return true; };
 
             Log.Logger = new LoggerConfiguration()
-.Enrich.FromLogContext()
-.WriteTo.Elasticsearch(new ElasticsearchSinkOptions(new Uri(_configuration["ElasticConfiguration:Uri"]))
-{
-    //AutoRegisterTemplate = true,
-    //IndexFormat = $"{Assembly.GetExecutingAssembly().GetName().Name.ToLower()}-{DateTime.UtcNow:yyyy-MM}",
-    //CustomFormatter = new ExceptionAsObjectJsonFormatter(renderMessage: true),
+            .Enrich.FromLogContext()
+            .Enrich.WithProperty("Environment", _env)
+            .Enrich.WithMachineName()                   //Shahid: This is must for machine name bifurcation later on source of events which container is sending these events
+            .Enrich.WithEnvironmentUserName()           //Shahid: Although mostly this would be system account, but sometimes for security, difference of creds come in, so it might be useful
+            .WriteTo.Elasticsearch(new ElasticsearchSinkOptions(new Uri(_configuration["ElasticConfiguration:Uri"]))
+            {
 
-    //FailureCallback = e => Console.WriteLine("Unable to submit event " + e.MessageTemplate),
-    //EmitEventFailure = EmitEventFailureHandling.WriteToSelfLog |
-    //                                   EmitEventFailureHandling.WriteToFailureSink |
-    //                                   EmitEventFailureHandling.RaiseCallback,
-    //FailureSink = new FileSink("./failures.txt", new JsonFormatter(), null)
+                TypeName = null,                            //Shahid: Since Elastic Search 8.0.0 and onwards this filed is no more there, so need to set null else, it will break
+                BatchAction = ElasticOpType.Create,
+                IndexFormat = $"{Assembly.GetExecutingAssembly().GetName().Name.ToLower()}-{DateTime.UtcNow:yyyy-MM}",
+                CustomFormatter = new ExceptionAsObjectJsonFormatter(renderMessage: true),
+                AutoRegisterTemplate = true,
+                ModifyConnectionSettings = (c) => c.BasicAuthentication("elastic", "bYq_PZIk0827sGu0*4rE"),
+                NumberOfShards = 2,
+                NumberOfReplicas = 1,
+                EmitEventFailure = EmitEventFailureHandling.WriteToSelfLog,
+                MinimumLogEventLevel = Serilog.Events.LogEventLevel.Information
 
+            })
+            .ReadFrom.Configuration(_configuration)     //Shahid: i hope this will help overrider settings here from setting in appsettings which should be ideal
+            .CreateLogger();
 
-    IndexFormat = $"{Assembly.GetExecutingAssembly().GetName().Name.ToLower()}-{DateTime.UtcNow:yyyy-MM}",
-    CustomFormatter = new ExceptionAsObjectJsonFormatter(renderMessage: true),
-
-    //IndexFormat = "log-myservice-dev",
-    AutoRegisterTemplate = true,
-    ModifyConnectionSettings = (c) => c.BasicAuthentication("elastic", "kfzTh-SuVwRaduntRpfC"),
-    NumberOfShards = 2,
-    NumberOfReplicas = 1,
-    EmitEventFailure = EmitEventFailureHandling.WriteToSelfLog,
-    MinimumLogEventLevel = Serilog.Events.LogEventLevel.Information
-
-})
-.Enrich.WithProperty("Environment", _env)
-.ReadFrom.Configuration(_configuration)
-.CreateLogger();
-
-
+            // Shahid: below was needed to fall back to normal logging in case of failures. Uncomment this to log to local file in case of failures
+            //FailureCallback = e => Console.WriteLine("Unable to submit event " + e.MessageTemplate),
+            //EmitEventFailure = EmitEventFailureHandling.WriteToSelfLog |
+            //                                   EmitEventFailureHandling.WriteToFailureSink |
+            //                                   EmitEventFailureHandling.RaiseCallback,
+            //FailureSink = new FileSink("./failures.txt", new JsonFormatter(), null)
 
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
-
-
-            //var configuration = new ConfigurationBuilder()
-            //     .SetBasePath(env.ContentRootPath)
-            //     .AddJsonFile("appsettings.json")
-            //     .Build();
-
-            //var logger = new LoggerConfiguration()
-            //    .ReadFrom.Configuration(configuration)
-            //    .CreateLogger();
-
-
 
             if (env.IsDevelopment())
             {

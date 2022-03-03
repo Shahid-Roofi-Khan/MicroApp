@@ -30,6 +30,14 @@ namespace OrderProcessing.Product.Controllers
             var random = new Random();
             var randomValue = random.Next(0, 100);
             _logger.LogInformation($"Random Value is {randomValue}");
+
+
+            // ----------------------------------------------------------------------------------------------- Logging an Object
+            var position = new { Latitude = 25, Longitude = 134 };
+            var elapsedMs = 34;
+
+            _logger.LogInformation("Processed {@Position} in {Elapsed:000} ms.", position, elapsedMs);
+            
             return randomValue;
         }
 
