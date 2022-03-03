@@ -49,6 +49,8 @@ namespace OrderProcessing.Product
             });
 
 
+            services.AddHttpContextAccessor();
+
             Serilog.Debugging.SelfLog.Enable(msg => Debug.WriteLine(msg));      //Shahid: This is very critical single line which tells in case logging fails to serilog the reason of actual failure
 
 
@@ -61,6 +63,8 @@ namespace OrderProcessing.Product
             .Enrich.WithProperty("Environment", _env)
             .Enrich.WithMachineName()                   //Shahid: This is must for machine name bifurcation later on source of events which container is sending these events
             .Enrich.WithEnvironmentUserName()           //Shahid: Although mostly this would be system account, but sometimes for security, difference of creds come in, so it might be useful
+            .Enrich.WithClientIp()                      //Shahid: This is of great value add. This is coming from nuget package: https://github.com/mo-esmp/serilog-enrichers-clientinfo
+            .Enrich.WithClientAgent()                   //Shahid: This also from above nuget package
             .WriteTo.Elasticsearch(new ElasticsearchSinkOptions(new Uri(_configuration["ElasticConfiguration:Uri"]))
             {
 

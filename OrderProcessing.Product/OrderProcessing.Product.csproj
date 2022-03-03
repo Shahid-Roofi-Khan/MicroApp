@@ -6,6 +6,7 @@
 
   <ItemGroup>
     <PackageReference Include="Serilog.AspNetCore" Version="5.0.0" />
+    <PackageReference Include="Serilog.Enrichers.ClientInfo" Version="1.1.4" />
     <PackageReference Include="Serilog.Enrichers.Environment" Version="2.2.0" />
     <PackageReference Include="serilog.formatting.elasticsearch" Version="8.4.1" />
     <PackageReference Include="Serilog.Settings.Configuration" Version="3.3.0" />
