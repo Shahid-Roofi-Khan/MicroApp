@@ -27,7 +27,7 @@ namespace OrderProcessing.Product
 
         private readonly IConfiguration _configuration;
         private readonly IWebHostEnvironment _env;
-        //  private readonly ILoggerFactory _loggerFactory;
+        //  private readonly ILoggerFactory _loggerFactory;             //Shahid: This logger will be added Not in main() in program.cs so it won't be available at this point, it will be created rather in this class itself later
 
         public Startup(IConfiguration configuration, IWebHostEnvironment env) //, ILoggerFactory loggerFactory)
         {
@@ -93,7 +93,7 @@ namespace OrderProcessing.Product
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, ILoggerFactory loggerFactory)
         {
 
             if (env.IsDevelopment())
@@ -114,7 +114,7 @@ namespace OrderProcessing.Product
                 endpoints.MapControllers();
             });
 
-
+            loggerFactory.AddSerilog();
 
 
         }
