@@ -11,6 +11,7 @@
     <PackageReference Include="serilog.formatting.elasticsearch" Version="8.4.1" />
     <PackageReference Include="Serilog.Settings.Configuration" Version="3.3.0" />
     <PackageReference Include="Serilog.Sinks.Elasticsearch" Version="8.4.1" />
+    <PackageReference Include="serilog.sinks.mongodb" Version="5.1.2" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.2.1" />
   </ItemGroup>
 

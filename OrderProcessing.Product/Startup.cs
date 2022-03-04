@@ -66,6 +66,10 @@ namespace OrderProcessing.Product
             .Enrich.WithClientIp()                      //Shahid: This is of great value add. This is coming from nuget package: https://github.com/mo-esmp/serilog-enrichers-clientinfo
             .Enrich.WithClientAgent()                   //Shahid: This also from above nuget package
             .Enrich.With<EnricherForCMTraceForLogTypeField>()  //Shahid: This is my own class for small enricher so that log type property which CMTrace need to have to render its logs properly
+
+
+#if ElasticSinkConfiguredThroughCode == false
+
             //.WriteTo.Elasticsearch(new ElasticsearchSinkOptions(new Uri(_configuration["ElasticConfiguration:Uri"]))
             //{
 
@@ -81,6 +85,8 @@ namespace OrderProcessing.Product
             //    MinimumLogEventLevel = Serilog.Events.LogEventLevel.Information
 
             //})
+#endif
+
             .ReadFrom.Configuration(_configuration)     //Shahid: i hope this will help overrider settings here from setting in appsettings which should be ideal
             .CreateLogger();
 
