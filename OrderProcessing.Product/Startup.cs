@@ -67,8 +67,7 @@ namespace OrderProcessing.Product
             .Enrich.WithClientAgent()                   //Shahid: This also from above nuget package
             .Enrich.With<EnricherForCMTraceForLogTypeField>()  //Shahid: This is my own class for small enricher so that log type property which CMTrace need to have to render its logs properly
 
-
-#if ElasticSinkConfiguredThroughCode == false
+#if ElasticSinkConfiguredThroughCode //Use below code if you want to configure Serilog.Sink.Elastic through code. This is because v.8.0.1 of elastic container does not work through appconfig because of bug (4/Mar/2022) (which it should)
 
             //.WriteTo.Elasticsearch(new ElasticsearchSinkOptions(new Uri(_configuration["ElasticConfiguration:Uri"]))
             //{
