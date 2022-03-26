@@ -22,6 +22,7 @@ namespace OrderProcessing.Product
 
         public static IHostBuilder CreateHostBuilder(string[] args) =>
                 Host.CreateDefaultBuilder(args)
+                .UseSerilog()           // Had to add it back, otherwise file logging actually stopped working also asp.net logging of requests also was not working
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
                     webBuilder.UseStartup<Startup>();

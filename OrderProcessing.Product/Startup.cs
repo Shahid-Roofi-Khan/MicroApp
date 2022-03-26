@@ -89,10 +89,6 @@ namespace OrderProcessing.Product
             .ReadFrom.Configuration(_configuration)     //Shahid: i hope this will help overrider settings here from setting in appsettings which should be ideal
             .CreateLogger();
 
-            
-
-           
-
             // Shahid: below was needed to fall back to normal logging in case of failures. Uncomment this to log to local file in case of failures
             //FailureCallback = e => Console.WriteLine("Unable to submit event " + e.MessageTemplate),
             //EmitEventFailure = EmitEventFailureHandling.WriteToSelfLog |
@@ -124,7 +120,12 @@ namespace OrderProcessing.Product
                 endpoints.MapControllers();
             });
 
+    
+            app.UseSerilogRequestLogging();     //Shahid: use this if you additionally want tracing of each request
+
             loggerFactory.AddSerilog();             //Shahid: This is the only change to add SeriLog to project. I've moved it from Program.cs from HostBuilder's end statement which makes it clean
+
+           
 
         }
     }
