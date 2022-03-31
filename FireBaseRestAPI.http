@@ -1,0 +1,16 @@
+@apikey =AIzaSyBAQERAbGuD9kg27YnnpQtben38YGnC-iA
+@userid = test2@test.com 
+@password = P@ssw0rd
+
+
+POST https://www.googleapis.com/identitytoolkit/v3/relyingparty/verifyPassword?key={{apikey}} HTTP/1.1
+Content-Type: application/json
+User-Agent: PostmanRuntime/7.29.0
+Accept: */*
+Postman-Token: 1130b95c-ff61-441e-95c4-7783e35e55ef
+Host: www.googleapis.com
+Accept-Encoding: gzip, deflate, br
+Connection: keep-alive
+Content-Length: 73
+
+{"email":"{{userid}}","password":"{{password}}","returnSecureToken":true}
